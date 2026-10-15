@@ -1,6 +1,8 @@
 package com.interviewos.learning.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -27,9 +29,11 @@ public class CodingChallenge {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "starter_code", nullable = false, columnDefinition = "jsonb")
     private String starterCode = "{}";
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "test_cases", nullable = false, columnDefinition = "jsonb")
     private String testCases = "[]";
 

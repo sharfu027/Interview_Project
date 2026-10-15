@@ -375,7 +375,8 @@ public class InterviewService {
     }
 
     private InterviewSessionDto toSessionDto(InterviewSession s) {
-        List<InterviewQuestionDto> qDtos = s.getQuestions().stream()
+        List<InterviewQuestion> questions = questionRepository.findBySessionIdOrderByQuestionOrderAsc(s.getId());
+        List<InterviewQuestionDto> qDtos = questions.stream()
             .map(q -> new InterviewQuestionDto(
                 q.getId(),
                 q.getQuestionOrder(),

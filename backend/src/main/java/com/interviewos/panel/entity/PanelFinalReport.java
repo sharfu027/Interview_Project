@@ -1,6 +1,8 @@
 package com.interviewos.panel.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -23,8 +25,9 @@ public class PanelFinalReport {
     @Column(name = "overall_score", nullable = false, precision = 5, scale = 2)
     private BigDecimal overallScore = BigDecimal.valueOf(8.75);
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "persona_breakdown", columnDefinition = "jsonb")
-    private String personaBreakdown;
+    private String personaBreakdown = "{}";
 
     @Column(name = "hiring_risk_analysis", columnDefinition = "TEXT")
     private String hiringRiskAnalysis;

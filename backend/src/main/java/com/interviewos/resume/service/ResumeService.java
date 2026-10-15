@@ -79,11 +79,13 @@ public class ResumeService {
             .orElseGet(() -> {
                 ResumeParseResult r = new ResumeParseResult();
                 r.setResume(resume);
+                r.setParserStatus("COMPLETED");
+                r.setParserVersion("1.0.0");
                 r.setFullName(resume.getUser().getFirstName() + " " + resume.getUser().getLastName());
                 r.setEmail(resume.getUser().getEmail());
                 r.setSummary("Seasoned software professional with background in distributed systems, microservices, and modern web application development.");
                 r.setAtsScore(BigDecimal.valueOf(87.5));
-                r.setAtsFeedback("Strong impact phrasing, clean bullet points with quantified outcomes. Recommend expanding cloud architecture credentials.");
+                r.setAtsFeedback("{\"summary\": \"Strong impact phrasing, clean bullet points with quantified outcomes. Recommend expanding cloud architecture credentials.\"}");
                 return parseResultRepository.save(r);
             });
 
@@ -188,8 +190,9 @@ public class ResumeService {
             parseResult.setFullName(user.getFirstName() + " " + user.getLastName());
             parseResult.setEmail(user.getEmail());
             parseResult.setParserStatus("COMPLETED");
+            parseResult.setParserVersion("1.0.0");
             parseResult.setAtsScore(BigDecimal.valueOf(89.0));
-            parseResult.setAtsFeedback("Resume successfully parsed. Clean structure with strong keyword coverage for software engineering roles.");
+            parseResult.setAtsFeedback("{\"summary\": \"Resume successfully parsed. Clean structure with strong keyword coverage for software engineering roles.\"}");
             parseResultRepository.save(parseResult);
 
             return toDto(saved);

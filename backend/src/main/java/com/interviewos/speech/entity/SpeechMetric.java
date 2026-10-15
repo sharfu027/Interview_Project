@@ -3,6 +3,8 @@ package com.interviewos.speech.entity;
 import com.interviewos.interview.entity.InterviewQuestion;
 import com.interviewos.interview.entity.InterviewSession;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -32,6 +34,7 @@ public class SpeechMetric {
     @Column(name = "filler_word_count", nullable = false)
     private int fillerWordCount = 0;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "filler_words_breakdown", columnDefinition = "jsonb")
     private String fillerWordsBreakdown = "{}";
 

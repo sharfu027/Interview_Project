@@ -27,7 +27,12 @@ htmlcov/
 node_modules/
 dist/
 dist-ssr/
-*.local
+# Storage uploads
+storage/
+**/storage/
+
+# Build caches
+*.tsbuildinfo
 
 # OS Specific
 .DS_Store

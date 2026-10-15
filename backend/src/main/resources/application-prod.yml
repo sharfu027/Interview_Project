@@ -1,0 +1,50 @@
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/interviewos}
+    username: ${SPRING_DATASOURCE_USERNAME:interviewos_app}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+
+app:
+  demo-mode: false
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token-expiration-ms: 3600000 # 1 hour
+    refresh-token-expiration-ms: 604800000 # 7 days
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://interviewos.dev,https://www.interviewos.dev}
+  ai-service:
+    base-url: ${AI_SERVICE_URL:http://127.0.0.1:8000}
+    connect-timeout-ms: 5000
+    read-timeout-ms: 45000
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local-dir: ${STORAGE_LOCAL_DIR:/opt/interviewos/storage/uploads}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
