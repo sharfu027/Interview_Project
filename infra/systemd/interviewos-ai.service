@@ -1,0 +1,29 @@
+[Unit]
+Description=InterviewOS Python FastAPI AI & Media Service
+After=network.target
+
+[Service]
+Type=simple
+User=interviewos
+Group=interviewos
+WorkingDirectory=/opt/interviewos/ai-service
+Environment=ENVIRONMENT=production
+Environment=PORT=8000
+Environment=HOST=127.0.0.1
+Environment=LOG_LEVEL=info
+Environment=PYTHONPATH=/opt/interviewos/ai-service
+ExecStart=/opt/interviewos/ai-service/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 4 --proxy-headers --forwarded-allow-ips='*'
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=interviewos-ai
+
+# Security Sandboxing
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
