@@ -40,6 +40,15 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
 
+    @org.springframework.beans.factory.annotation.Value("${app.demo-mode:true}")
+    private boolean demoMode = true;
+
+    private static final java.util.Set<String> DEMO_EMAILS = java.util.Set.of(
+        "candidate@interviewos.dev",
+        "recruiter@interviewos.dev",
+        "admin@interviewos.dev"
+    );
+
     public AuthService(
         UserRepository userRepository,
         RoleRepository roleRepository,
@@ -58,10 +67,19 @@ public class AuthService {
         this.tokenProvider = tokenProvider;
     }
 
+    public void setDemoMode(boolean demoMode) {
+        this.demoMode = demoMode;
+    }
+
     @Transactional
     public AuthResponse login(LoginRequest request) {
+        String normalizedEmail = request.email().toLowerCase().trim();
+        if (!demoMode && DEMO_EMAILS.contains(normalizedEmail)) {
+            throw new UnauthorizedException("Seeded development demo accounts are disabled in production.");
+        }
+
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.email().toLowerCase().trim(), request.password())
+            new UsernamePasswordAuthenticationToken(normalizedEmail, request.password())
         );
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();

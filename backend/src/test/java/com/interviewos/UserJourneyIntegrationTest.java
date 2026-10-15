@@ -21,7 +21,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.interviewos.auth.service.AuthService;
+import com.interviewos.job.dto.CreateApplicationRequest;
+import com.interviewos.speech.dto.SaveSpeechMetricRequest;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +48,9 @@ public class UserJourneyIntegrationTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthService authService;
 
     @org.junit.jupiter.api.BeforeEach
     void setUpSeededUsers() {
@@ -391,6 +398,186 @@ public class UserJourneyIntegrationTest {
         mockMvc.perform(get("/api/v1/interviews")
                 .header("Authorization", "Bearer malformed.jwt.token.here"))
             .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Journey 6: Speaking Coach Analytics Recording and Timeline Retrieval")
+    void testSpeechCoachAnalytics() throws Exception {
+        String token = getCandidateToken();
+
+        // 1. Create session to link metrics
+        CreateInterviewRequest createReq = new CreateInterviewRequest(
+            "Speech Coach Practice Session",
+            "BEHAVIORAL",
+            "BACKEND",
+            "MID",
+            "MEDIUM",
+            "AUDIO_VIDEO",
+            false,
+            "AFTER_SESSION",
+            null,
+            null,
+            2,
+            30
+        );
+
+        MvcResult intResult = mockMvc.perform(post("/api/v1/interviews")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createReq))
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isCreated()).andReturn();
+
+        String sessionId = objectMapper.readTree(intResult.getResponse().getContentAsString()).get("data").get("id").asText();
+
+        // 2. Record speech metrics
+        SaveSpeechMetricRequest speechReq = new SaveSpeechMetricRequest(
+            null,
+            BigDecimal.valueOf(142.5),
+            120,
+            2,
+            "{\"um\": 1, \"like\": 1}",
+            3,
+            0,
+            BigDecimal.valueOf(50.5),
+            BigDecimal.valueOf(9.0),
+            "EXCELLENT",
+            "Articulate delivery with structured STAR pacing."
+        );
+
+        mockMvc.perform(post("/api/v1/speech-coach/sessions/" + sessionId + "/metrics")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(speechReq))
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.wordsPerMinute").value(142.5))
+            .andExpect(jsonPath("$.data.fillerWordCount").value(2));
+
+        // 3. Retrieve session timeline metrics
+        mockMvc.perform(get("/api/v1/speech-coach/sessions/" + sessionId + "/metrics")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data", not(empty())));
+    }
+
+    @Test
+    @DisplayName("Journey 7: Career Roadmaps, Weaknesses, and Coding Lab Challenges")
+    void testCareerRoadmapsAndCodingLab() throws Exception {
+        String token = getCandidateToken();
+
+        // 1. List roadmaps
+        mockMvc.perform(get("/api/v1/roadmaps")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data").isArray());
+
+        // 2. List coding challenges
+        mockMvc.perform(get("/api/v1/coding-lab/challenges")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data", not(empty())))
+            .andExpect(jsonPath("$.data[0].slug").isNotEmpty());
+
+        // 3. List candidate weaknesses
+        mockMvc.perform(get("/api/v1/weaknesses")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @Test
+    @DisplayName("Journey 8b: Job Search, Company Intelligence, and Salary Compensation Benchmark")
+    void testJobSearchAndCompanyPrepAndSalary() throws Exception {
+        String token = getCandidateToken();
+
+        // 1. Public job search
+        mockMvc.perform(get("/api/v1/jobs/public")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.content").isArray());
+
+        // 2. Company-specific interview prep guide
+        mockMvc.perform(get("/api/v1/jobs/public/companies/stripe")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.slug").value("stripe"))
+            .andExpect(jsonPath("$.data.name").value("Stripe"))
+            .andExpect(jsonPath("$.data.interviewProcessNotes").isNotEmpty());
+
+        // 3. Statistical compensation estimate
+        mockMvc.perform(get("/api/v1/salary/public/estimate")
+                .param("jobFamily", "BACKEND")
+                .param("seniority", "SENIOR")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.totalCompMedian").isNumber())
+            .andExpect(jsonPath("$.data.baseSalaryMedian").isNumber())
+            .andExpect(jsonPath("$.data.keyInfluencingFactors", not(empty())));
+    }
+
+    @Test
+    @DisplayName("Journey 8c: Application Tracker Full Lifecycle (Create, List, Update, Delete)")
+    void testApplicationTrackerLifecycle() throws Exception {
+        String token = getCandidateToken();
+
+        // 1. Create tracked application
+        CreateApplicationRequest appReq = new CreateApplicationRequest(
+            "Anthropic",
+            "Senior Distributed Systems Engineer",
+            "APPLIED",
+            "RESUME_SCREEN",
+            LocalDate.now(),
+            BigDecimal.valueOf(210000),
+            "Recruiter Lead",
+            "careers@anthropic.com",
+            "Preparing concurrency and resilience case studies."
+        );
+
+        MvcResult createResult = mockMvc.perform(post("/api/v1/jobs/applications")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(appReq))
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.data.companyName").value("Anthropic"))
+            .andReturn();
+
+        String applicationId = objectMapper.readTree(createResult.getResponse().getContentAsString())
+            .get("data").get("id").asText();
+
+        // 2. List applications
+        mockMvc.perform(get("/api/v1/jobs/applications")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data", not(empty())));
+
+        // 3. Update application status
+        mockMvc.perform(patch("/api/v1/jobs/applications/" + applicationId)
+                .param("status", "INTERVIEWING")
+                .param("currentStage", "TECHNICAL_SCREEN")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.status").value("INTERVIEWING"));
+
+        // 4. Delete application
+        mockMvc.perform(delete("/api/v1/jobs/applications/" + applicationId)
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Security Audit: Production Demo Account Disabling via demoMode=false")
+    void testSeededDemoAccountsBlockedWhenDemoModeDisabled() throws Exception {
+        try {
+            authService.setDemoMode(false);
+
+            LoginRequest demoLogin = new LoginRequest("candidate@interviewos.dev", "Password123!");
+            mockMvc.perform(post("/api/v1/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(demoLogin)))
+                .andExpect(status().isUnauthorized());
+        } finally {
+            // Restore demo mode for following tests
+            authService.setDemoMode(true);
+        }
     }
 
     // Helper utilities for obtaining JWT tokens

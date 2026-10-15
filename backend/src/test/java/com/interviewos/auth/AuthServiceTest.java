@@ -91,4 +91,12 @@ class AuthServiceTest {
         verify(userProfileRepository, times(1)).save(any());
         verify(userSettingsRepository, times(1)).save(any());
     }
+
+    @Test
+    void login_WhenDemoModeDisabledAndDemoAccount_ThrowsUnauthorizedException() {
+        authService.setDemoMode(false);
+        com.interviewos.auth.dto.LoginRequest req = new com.interviewos.auth.dto.LoginRequest("candidate@interviewos.dev", "Password123!");
+        assertThrows(com.interviewos.common.exception.UnauthorizedException.class, () -> authService.login(req));
+        verify(authenticationManager, never()).authenticate(any());
+    }
 }

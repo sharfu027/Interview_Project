@@ -138,12 +138,12 @@ INSERT INTO organizations (id, name, slug, website, industry, company_size, is_v
 ON CONFLICT (id) DO NOTHING;
 
 -- Clearly Labeled Demo Users (Password: Password123! - BCrypt hash)
--- BCrypt: $2b$10$gTFHmYVLWkGCLIRxvzdxWO3WNgL8cxUUu6W7u1euwtpAtynQZs2Ee
+-- BCrypt: $2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi
 INSERT INTO users (id, email, password_hash, first_name, last_name, is_active, is_email_verified) VALUES
 (
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     'candidate@interviewos.dev',
-    '$2b$10$gTFHmYVLWkGCLIRxvzdxWO3WNgL8cxUUu6W7u1euwtpAtynQZs2Ee',
+    '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi',
     'David [DEMO]',
     'Candidate',
     TRUE,
@@ -152,7 +152,7 @@ INSERT INTO users (id, email, password_hash, first_name, last_name, is_active, i
 (
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
     'recruiter@interviewos.dev',
-    '$2b$10$gTFHmYVLWkGCLIRxvzdxWO3WNgL8cxUUu6W7u1euwtpAtynQZs2Ee',
+    '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi',
     'Sarah [DEMO]',
     'Recruiter',
     TRUE,
@@ -161,7 +161,7 @@ INSERT INTO users (id, email, password_hash, first_name, last_name, is_active, i
 (
     'cccccccc-cccc-cccc-cccc-cccccccccccc',
     'admin@interviewos.dev',
-    '$2b$10$gTFHmYVLWkGCLIRxvzdxWO3WNgL8cxUUu6W7u1euwtpAtynQZs2Ee',
+    '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi',
     'System [DEMO]',
     'Admin',
     TRUE,
